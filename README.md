@@ -1,20 +1,16 @@
-TODO:
+## DONE:
+Pré-processamento:
+- Juntar databases de matriculas e filtrar dados - input/matriculas.csv
+- Juntar databases de turmas e filtrar dados - input/turmas.csv
+- Interpretar os horarios das turmas
+- Adicionar informações de turma nas matriculas - input/matriculas-plus.csv
 
-Interpretar os horarios das turmas
-Juntar as tabelas matriculas com turmas
+## TODO:
+Pré-processamento:
+- Adicionar informações de sobre alunos nas turmas (média da turma, faltas...) - input/matriculas-plus.csv
+
 Fazer análise por classificação:
-    descriçao como folha
-    numero total faltas como folha
-Análise por estatística:
-    
+- descriçao como folha
+- numero total faltas como folha
 
-Classificação de horarios: SIM ou NAO em uma ou mais
-noite34
-noite12
-tarde12
-tarde34
-tarde56
-manha56
-manha34
-manha12
-sabado
+Análise por estatística:

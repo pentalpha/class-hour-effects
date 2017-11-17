@@ -7,7 +7,7 @@ turmasPaths = ['raw/turmas-2014.1.csv', 'raw/turmas-2014.2.csv',
  'raw/turmas-2017.1.csv']
 
 columns = ['id_turma', 'descricao_horario', 'id_componente_curricular', 
-'situacao_turma', 'id_docente_interno', 'id_docente_externo', 
+'id_docente_interno', 'id_docente_externo', 
 'nivel_ensino', 'ano', 'periodo']
 
 newColumns = ['noite34', 'noite12', 
