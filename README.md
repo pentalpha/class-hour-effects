@@ -9,9 +9,12 @@ Análise por estatística:
     
 
 Classificação de horarios: SIM ou NAO em uma ou mais
-noite_final
-noite_inicio
-tarde
-manhã
-manhã_inicio
-sábado
+noite34
+noite12
+tarde12
+tarde34
+tarde56
+manha56
+manha34
+manha12
+sabado
