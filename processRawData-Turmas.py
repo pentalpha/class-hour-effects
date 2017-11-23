@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
+
 
 turmasPaths = ['raw/turmas-2014.1.csv', 'raw/turmas-2014.2.csv',
  'raw/turmas-2015.1.csv', 'raw/turmas-2015.2.csv', 
@@ -10,10 +12,12 @@ columns = ['id_turma', 'descricao_horario', 'id_componente_curricular',
 'id_docente_interno', 'id_docente_externo', 
 'nivel_ensino', 'ano', 'periodo']
 
-newColumns = ['noite34', 'noite12', 
+horarioColumns = ['noite34', 'noite12', 
 'tarde56', 'tarde34', 'tarde12',
 'manha56', 'manha34', 'manha12',
 'sabado']
+
+newColumns = ['aulas','alunos']
 
 numerals = set()
 for n in range(0,10):
@@ -24,7 +28,7 @@ rows = []
 
 def getHorario(description):
     hourValues = dict()
-    for col in newColumns:
+    for col in horarioColumns:
         hourValues[col] = False
     description = description.split('(')[0]
     splits = description.split(' ')
@@ -58,24 +62,28 @@ def getHorario(description):
 
 def addRow(row):
     newRow = dict()
-    nullValue = False
     for col in columns:
         newRow[col] = row[col]
     hourValues = getHorario(row['descricao_horario'])
-    for col in newColumns:
+    newRow['aulas'] = row['qtd_aulas_lancadas']
+    newRow['alunos'] = min([row['capacidade_aluno'], row['total_solicitacoes']])
+        
+    for col in horarioColumns:
         newRow[col] = hourValues[col]
     rows.append(newRow)
 
 def addRows(df):
     df.apply(lambda row: addRow(row), axis=1)
 
-for path in turmasPaths:
+for path in tqdm(turmasPaths):
     print('Processing ' + path)
     df = pd.read_csv(path, sep=';')
     for col in columns:
-        if not col in optionalCols:
+        if not (col in optionalCols) and (col in df.columns):
             df[col].replace('', np.nan, inplace=True)
             df.dropna(subset=[col], inplace=True)
+    df.dropna(subset=['capacidade_aluno','total_solicitacoes','qtd_aulas_lancadas'],
+              inplace=True)
     df = df[df['situacao_turma'] == "CONSOLIDADA"]
     df = df[df['distancia'] == 'f']
 
@@ -85,6 +93,7 @@ for path in turmasPaths:
 def makeTurmasDf():
     print(str(len(rows)))
     print('Writing final dataframe')
+    columns.extend(horarioColumns)
     columns.extend(newColumns)
     finalDf = pd.DataFrame(rows, columns=columns)
 
