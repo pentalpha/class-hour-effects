@@ -7,6 +7,7 @@ Created on Thu Nov 23 13:20:00 2017
 """
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 turmasDfPath = 'input/turmas.csv'
 turmasMiniDfPath = 'input/turmas-05.csv'
@@ -17,6 +18,11 @@ matriculasPlusDfPath = 'input/matriculas-plus.csv'
 matriculasPlusMiniDfPath = 'input/matriculas-plus-05.csv'
 turmasPlusDfPath = 'input/turmas-plus.csv'
 turmasPlusMiniDfPath = 'input/turmas-plus-05.csv'
+
+doAll = True
+if not doAll:
+    turmasDfPath = turmasMiniDfPath
+    turmasPlusDfPath = turmasPlusMiniDfPath
 
 matriculaStates = ['APROVADO',
  'APROVADO POR NOTA',
@@ -31,20 +37,61 @@ matriculaStates = ['APROVADO',
  'DESISTENCIA',
  'TRANSFERIDO']
 
+print("Reading input data")
+matriculasPlusDf = pd.read_csv(matriculasPlusDfPath)
 turmasDf = pd.read_csv(turmasDfPath,sep='\t')
+studentsOf = dict()
+turmas = set(turmasDf['id_turma'].unique().tolist())
+turmaStatePerc = dict()
 
-studentesOf = dict()
-turmas = set(turmasDf['id_turma'].unique.tolist())
+def getMedianFaults(turma):
+    students = studentsOf[turma]
+    return students['perc_faltas'].median()
 
-for turma in turmas:
-    studentesOf[turma] = turmasDf[turmasDf['id_turma'] == turma]
-
-def getAvgFreq(turma):
-
-def getAvgScore(turma):
+def getMedianScore(turma):
+    students = studentsOf[turma]
+    return students['media_final'].median()
     
 def getStatesPerc(turma):
+    states = dict()
+    students = studentsOf[turma]
+    for state in matriculaStates:
+        count = len(students[students['descricao'] == state])
+        states[state] = count/float(len(students))
+    turmaStatePerc[turma] = states
+    return states
+        
+print("Beggining with " + str(len(turmasDf)) + " classes")
+print("Dividing students by class.")
+for turma in tqdm(turmas):
+    studentsOf[turma] = matriculasPlusDf[matriculasPlusDf['id_turma'] == turma]
 
+print("Removing classes with no students")
+turmasDf['no_students'] = turmasDf.apply(lambda row: len(studentsOf[row['id_turma']]) == 0,
+        axis = 1)
+turmasDf = turmasDf[turmasDf['no_students'] == False]
+del turmasDf['no_students']
+print(str(len(turmasDf)) + " classes now")
 
+print("Computing median faults")
+turmasDf['mediana_faltas'] = turmasDf.apply(
+        lambda row: getMedianFaults(row['id_turma']), axis=1)
 
+print("Computing median scores")
+turmasDf['mediana_media_final'] = turmasDf.apply(
+        lambda row: getMedianScore(row['id_turma']), axis=1)
 
+print("Computing student's registration states[1/2]")
+turmasDf.apply(lambda row: getStatesPerc(row['id_turma']), axis=1)
+print("Computing student's registration states[2/2]")
+for state in tqdm(matriculaStates):
+    turmasDf[state] = turmasDf.apply(
+            lambda row: turmaStatePerc[row['id_turma']][state],
+            axis=1)
+    turmasDf[state] = turmasDf[state].astype(float)
+
+print("Writing final dataframe")
+turmasDf['mediana_media_final'] = turmasDf['mediana_media_final'].astype(float)
+turmasDf['mediana_faltas'] = turmasDf['mediana_faltas'].astype(float)
+
+turmasDf.to_csv(turmasPlusDfPath, index=False)
