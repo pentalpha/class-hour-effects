@@ -50,14 +50,14 @@ matriculasDf = pd.read_csv(matriculasDfPath,sep='\t')
 print(str(len(matriculasDf)) + " matriculas before...")
 matriculasDf['valid_class'] = matriculasDf.apply(lambda row: str(row['id_turma']) in classes, axis=1)
 matriculasDf = matriculasDf[matriculasDf['valid_class'] == True]
+print(str(len(matriculasDf)) + " registrations, after erasing invalid classes.")
 matriculasDf.dropna(subset=['numero_total_faltas'], inplace=True)
-print(str(len(matriculasDf)) + " matriculas, after erasing invalid classes.")
+print(str(len(matriculasDf)) + " registrations, after erasing rows without 'numero_total_faltas'.")
 
 print("Adding new info to final DataFrame")
 
 def getFrequency(id_turma, faltas):
     return float(faltas) / classInfo[id_turma]['aulas']
-
 
 for info in infosToAdd:
     matriculasDf[info] = ''
@@ -68,17 +68,22 @@ for info in tqdm(infosToAdd):
             axis=1)
 
 print("Processing frequencies")
-matriculasDf['frequencia'] = matriculasDf.apply(
+matriculasDf['perc_faltas'] = matriculasDf.apply(
         lambda row: getFrequency(str(row['id_turma']), row['numero_total_faltas']), 
         axis=1)
+matriculasDf = matriculasDf[matriculasDf['perc_faltas'] <= 1.0]
+print(str(len(matriculasDf)) + " registrations, after erasing invalid values of 'perc_faltas'.")
 
-#matriculasDf.dropna(subset=['frequencia'], inplace=True)
+#matriculasDf.dropna(subset=['perc_faltas'], inplace=True)
 
 print("Writing final dataframe")
 
 for col in infosToAdd:
     matriculasDf[col].replace('', np.nan, inplace=True)
     matriculasDf.dropna(subset=[col], inplace=True)
+
+print(str(len(matriculasDf)) + " registrations, after erasing null values of " 
+      + str(infosToAdd) + ".")
 
 del matriculasDf['valid_class']
 matriculasDf['n1'] = matriculasDf['n1'].astype(float)
@@ -88,6 +93,6 @@ matriculasDf['media_final'] = matriculasDf['media_final'].astype(float)
 matriculasDf['id_curso'] = matriculasDf['id_curso'].astype(int)
 matriculasDf['id_turma'] = matriculasDf['id_turma'].astype(int)
 matriculasDf['numero_total_faltas'] = matriculasDf['numero_total_faltas'].astype(int)
-matriculasDf['frequencia'] = matriculasDf['frequencia'].astype(float)
+matriculasDf['perc_faltas'] = matriculasDf['perc_faltas'].astype(float)
 
-matriculasDf.to_csv(matriculasPlusDfPath, sep='\t', index=False)
+matriculasDf.to_csv(matriculasPlusDfPath, index=False)
