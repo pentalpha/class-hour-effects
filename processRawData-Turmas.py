@@ -96,14 +96,19 @@ def makeTurmasDf():
     columns.extend(horarioColumns)
     columns.extend(newColumns)
     finalDf = pd.DataFrame(rows, columns=columns)
-
+    
     finalDf['id_turma'] = finalDf['id_turma'].astype(int)
     finalDf['id_componente_curricular'] = finalDf['id_componente_curricular'].astype(int)
     finalDf['ano'] = finalDf['ano'].astype(int)
     finalDf['periodo'] = finalDf['periodo'].astype(int)
-
-    finalDf.to_csv('input/turmas.csv', index=False, sep='\t')
-    finalDf = finalDf.iloc[np.random.choice(finalDf.index, int(len(finalDf)*0.05))]
-    finalDf.to_csv('input/turmas-05.csv', index=False, sep='\t')
+    finalDf['aulas'] = finalDf['aulas'].astype(int)
+    finalDf['alunos'] = finalDf['alunos'].astype(int)
+    
+    finalDf = finalDf[finalDf['aulas'] > 0]
+    finalDf = finalDf[finalDf['alunos'] > 0]
+    
+    finalDf.to_csv('input/turmas.csv', index=False)
+    finalDf = finalDf.loc[np.random.choice(finalDf.index, int(len(finalDf)*0.05))]
+    finalDf.to_csv('input/turmas-05.csv', index=False)
 
 makeTurmasDf()

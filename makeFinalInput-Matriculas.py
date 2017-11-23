@@ -27,6 +27,7 @@ def getClassInfo(row):
     newInfo = dict()
     for info in infosToAdd:
         newInfo[info] = row[info]
+    newInfo['aulas'] = row['aulas']
     classInfo[str(row['id_turma'])] = newInfo
 
 def getClassInfos():
@@ -47,22 +48,31 @@ print("Reading input 'matriculas' ")
 matriculasDf = pd.read_csv(matriculasDfPath,sep='\t')
 #print(matriculasDf.columns)
 print(str(len(matriculasDf)) + " matriculas before...")
-matriculasDf = matriculasDf[matriculasDf['id_turma'].isin(classInfo)]
+matriculasDf['valid_class'] = matriculasDf.apply(lambda row: str(row['id_turma']) in classes, axis=1)
+matriculasDf = matriculasDf[matriculasDf['valid_class'] == True]
+matriculasDf.dropna(subset=['numero_total_faltas'], inplace=True)
 print(str(len(matriculasDf)) + " matriculas, after erasing invalid classes.")
 
 print("Adding new info to final DataFrame")
 
-def getInfo(id_turma, info):
-    if id_turma in classInfo:
-        return classInfo[id_turma][info]
-    else:
-        return ''
+def getFrequency(id_turma, faltas):
+    return float(faltas) / classInfo[id_turma]['aulas']
+
 
 for info in infosToAdd:
     matriculasDf[info] = ''
 
 for info in tqdm(infosToAdd):
-    matriculasDf[info] = matriculasDf.apply(lambda row: getInfo(str(row['id_turma']), info), axis=1)
+    matriculasDf[info] = matriculasDf.apply(
+            lambda row: classInfo[str(row['id_turma'])][info], 
+            axis=1)
+
+print("Processing frequencies")
+matriculasDf['frequencia'] = matriculasDf.apply(
+        lambda row: getFrequency(str(row['id_turma']), row['numero_total_faltas']), 
+        axis=1)
+
+#matriculasDf.dropna(subset=['frequencia'], inplace=True)
 
 print("Writing final dataframe")
 
@@ -70,6 +80,7 @@ for col in infosToAdd:
     matriculasDf[col].replace('', np.nan, inplace=True)
     matriculasDf.dropna(subset=[col], inplace=True)
 
+del matriculasDf['valid_class']
 matriculasDf['n1'] = matriculasDf['n1'].astype(float)
 matriculasDf['n2'] = matriculasDf['n2'].astype(float)
 matriculasDf['n3'] = matriculasDf['n3'].astype(float)
@@ -77,5 +88,6 @@ matriculasDf['media_final'] = matriculasDf['media_final'].astype(float)
 matriculasDf['id_curso'] = matriculasDf['id_curso'].astype(int)
 matriculasDf['id_turma'] = matriculasDf['id_turma'].astype(int)
 matriculasDf['numero_total_faltas'] = matriculasDf['numero_total_faltas'].astype(int)
+matriculasDf['frequencia'] = matriculasDf['frequencia'].astype(float)
 
 matriculasDf.to_csv(matriculasPlusDfPath, sep='\t', index=False)
