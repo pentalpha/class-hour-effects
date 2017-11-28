@@ -1,0 +1,13 @@
+  0%|                                                     | 0/7 [00:00<?, ?it/s]Processing raw/turmas-2014.1.csv
+ 14%|██████▍                                      | 1/7 [00:02<00:14,  2.48s/it]Processing raw/turmas-2014.2.csv
+ 29%|████████████▊                                | 2/7 [00:04<00:12,  2.46s/it]Processing raw/turmas-2015.1.csv
+ 43%|███████████████████▎                         | 3/7 [00:07<00:09,  2.50s/it]Processing raw/turmas-2015.2.csv
+ 57%|█████████████████████████▋                   | 4/7 [00:10<00:07,  2.52s/it]Processing raw/turmas-2016.1.csv
+ 71%|████████████████████████████████▏            | 5/7 [00:12<00:05,  2.58s/it]Processing raw/turmas-2016.2.csv
+ 86%|██████████████████████████████████████▌      | 6/7 [00:15<00:02,  2.60s/it]Processing raw/turmas-2017.1.csv
+100%|█████████████████████████████████████████████| 7/7 [00:18<00:00,  2.62s/it]
+Total of 100903 in raw input files.
+Added 76915
+Dropped 23988
+Writing final dataframe
+67229 after filtering for classes with lessons and students.
